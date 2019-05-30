@@ -36,12 +36,13 @@ public class KafkaPublisherApplication {
 		System.out.println("This is the data that you like "+data);
 		return messages;
 	}
-
+	/*
 	private void sendM(String message){
 		logger.info("sending message='{}' to topic='{}'", message, topic);
 		template.send(new ProducerRecord<>(topic, message));
 
 	}
+	*/
 
 	public static void main(String[] args) {
 		try {
