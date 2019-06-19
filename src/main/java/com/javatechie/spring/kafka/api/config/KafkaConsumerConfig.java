@@ -15,7 +15,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Configuration
-@EnableKafka
 public class KafkaConsumerConfig {
 
 	// config for String plain text

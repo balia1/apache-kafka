@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="ISO-8859-1">
+	<title>Home</title>
+	<link href="/webjars/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+	<script src="/webjars/jquery/jquery.min.js"></script>
+	<script src="/webjars/sockjs-client/sockjs.min.js"></script>
+	<script src="/webjars/stomp-websocket/stomp.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.min.js"></script>
+	<script type="text/javascript">
+        var stompClient;
+
+        /* Chart Configuration */
+        var config = {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Istanbul',
+                    backgroudColor: 'rgb(25, 99, 32)',
+                    borderColor: 'rgb(25, 99, 32)',
+                    data: [],
+                    fill: false
+
+                },{
+                    label: 'Tokyo',
+                    backgroudColor: 'rgb(255, 199, 132)',
+                    borderColor: 'rgb(255, 199, 132)',
+                    data: [],
+                    fill: false
+                },{
+                    label: 'Beijing',
+                    backgroudColor: 'rgb(25, 99, 132)',
+                    borderColor: 'rgb(25, 99, 132)',
+                    data: [],
+                    fill: false
+                },{
+                    label: 'London',
+                    backgroudColor: 'rgb(2, 199, 32)',
+                    borderColor: 'rgb(2, 199, 32)',
+                    data: [],
+                    fill: false
+                },{
+                    label: 'Moscow',
+                    backgroudColor: 'rgb(255, 99, 132)',
+                    borderColor: 'rgb(255, 99, 132)',
+                    data: [],
+                    fill: false
+                }]
+            },
+            options: {
+                responsive: true,
+                title: {
+                    display: true,
+                    text: 'Temperature'
+                },
+                tooltips: {
+                    mode: 'index',
+                    intersect: false
+                },
+                hover: {
+                    mode: 'nearest',
+                    intersect: true
+                },
+                scales: {
+                    xAxes: [{
+                        display: true,
+                        type: 'time',
+                        time: {
+                            unit: 'second',
+                            unitStepSize: 10,
+                            displayFormats: {
+                                quarter: 'h:mm:ss a'
+                            }
+                        },
+                        scaleLabel: {
+                            display: true,
+                            labelString: 'Time'
+                        }
+                    }],
+                    yAxes: [{
+                        display: true,
+                        scaleLabel: {
+                            display: true,
+                            labelString: 'Value'
+                        }
+                    }]
+                }
+            }
+        };
+
+        /* Document Ready Event */
+        $(document).ready(function() {
+
+            var ctx = document.getElementById('lineChart').getContext('2d');
+            window.myLine = new Chart(ctx, config);
+            Istanbul = 0
+            Tokyo = 1
+            Beijing = 2
+            London = 3
+            Moscow = 4
+
+            /* Configuring WebSocket on Client Side */
+            var socket = new SockJS('/live-temperature');
+            stompClient = Stomp.over(socket);
+            stompClient.connect({}, function(frame) {
+                stompClient.subscribe('/topic/temperature', function(temperature) {
+                    $('#temperature').text(temperature.body);
+                    /* Push new data On X-Axis of Chart */
+                    /* Push new data on Y-Axis of chart */
+                    config.data.datasets.forEach(function(dataset) {
+                        if ((dataset.label == 'Istanbul') && (temperature.body.includes('Istanbul'))) {
+                            config.data.labels.push(new Date());
+                            Istanbul = Istanbul + 1
+                            dataset.data.push(Istanbul);
+                        }
+                        else if ((dataset.label == 'Tokyo') && (temperature.body.includes('Tokyo'))) {
+                            Tokyo = Tokyo + 1
+                            dataset.data.push(Tokyo);
+                        }
+                        else if ((dataset.label == 'Beijing') && (temperature.body.includes('Beijing'))) {
+                            Beijing = Beijing + 1
+                            dataset.data.push(Beijing);
+                        }
+                        else if ((dataset.label == 'London') && (temperature.body.includes('London'))) {
+                            London = London + 1
+                            dataset.data.push(London);
+                        }
+                        else if ((dataset.label == 'Moscow') && (temperature.body.includes('Moscow'))) {
+                            Moscow = Moscow + 1
+                            dataset.data.push(Moscow);
+                        }
+                    });
+                    window.myLine.update();
+                });
+            });
+
+        });
+    </script>
+</head>
+
+<body>
+<div class="alert alert-danger" role="alert" style="width:300px;margin-left:40%;margin-top:10px;">
+	<p class="text-center">Current Temperature : <b id="temperature">0</b></p>
+</div>
+<div class="model">
+	<div class="modal-dialog" style="width:80%;height:auto">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title">Temperature</h5>
+			</div>
+			<div class="model-body">
+				<div class="container" style="width:80%">
+					<canvas id="lineChart"></canvas>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+</body>
+
+</html>

@@ -7,8 +7,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.net.InetAddress;
@@ -18,10 +20,12 @@ import java.util.List;
 
 @SpringBootApplication
 @RestController
+@EnableKafka
 public class KafkaPublisherApplication {
 
+
 	@Autowired
-	private KafkaTemplate<String, Object> template;
+	SimpMessagingTemplate template;
 
 
 	List<String> messages = new ArrayList<>();
@@ -34,15 +38,17 @@ public class KafkaPublisherApplication {
 	public List<String> getMsgFromTopic(String data) {
 		messages.add(data);
 		System.out.println("This is the data that you like "+data);
+		template.convertAndSend("/topic/temperature", data);
 		return messages;
 	}
-	/*
-	private void sendM(String message){
+/*
+	public void sendM(String message){
 		logger.info("sending message='{}' to topic='{}'", message, topic);
-		template.send(new ProducerRecord<>(topic, message));
+		this.template.send(topic, message);
 
 	}
-	*/
+*/
+
 
 	public static void main(String[] args) {
 		try {
